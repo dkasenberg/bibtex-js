@@ -621,15 +621,26 @@ function bibtex_js_draw() {
     (new BibtexDisplay()).displayBibtex($("#bibtex_input").val(), $("#bibtex_display"));
   } else {
     //Gets the BibTex files and adds them together
-    var bibstring = "";
+    var bibstrings = {};
+
     $('bibtex').each(function(index, value) {
        $.get($(this).attr('src'), function(data) {
-        bibstring += data;
+       	var name = $(value).attr('name');
+       	bibstrings[name] = data;
       });
     });
+
     // Executed on completion of last outstanding ajax call
     $(document).ajaxStop(function() {
-      (new BibtexDisplay()).displayBibtex(bibstring, $("#bibtex_display"));
+      console.log(bibstrings);
+    	var display = new BibtexDisplay();
+    	for(var name in bibstrings) {
+        console.log(bibstrings[name]);
+    		if(bibstrings.hasOwnProperty(name)) {
+    			(new BibtexDisplay).displayBibtex(bibstrings[name], $(".bibtex_display." + name));
+    		}
+    	}
+      // (new BibtexDisplay()).displayBibtex(bibstring, $("#bibtex_display"));
       loadExtras();
     });
   }
@@ -701,7 +712,7 @@ function BibTeXSearcher() {
   }
   
   this.unhideAll = function() {
-    $("div#bibtex_display").children().each( 
+    $("div.bibtex_display").children().each( 
         function () {
           $(this).show();
           $(this).find(".bibtexentry").each(
@@ -713,7 +724,7 @@ function BibTeXSearcher() {
   
   this.hideEntry = function(word) {
     var funcCaller = this;
-    var container = $("div#bibtex_display").children();
+    var container = $("div.bibtex_display").children();
     if(container.first().hasClass("bibtexentry:visible")){
       container.each(
         function() {
