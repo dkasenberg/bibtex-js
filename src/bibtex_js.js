@@ -355,15 +355,23 @@ function BibtexDisplay() {
   	string = string.replace(/[ ]*[\n\t][ ]*/g, " ");
   	string = string.replace(/[ ]+/g, " ");
   	var arrayString = string.split(new RegExp("[\\s]+and[\\s]+"));
-  	var newString = arrayString[0];
+  	var newString = this.individualAuthorString(arrayString[0]);
   	for (i = 1; i < arrayString.length; i++) {
-  	  if(i+1>=arrayString.length) {
-  	    newString += ", and " + arrayString[i];
+      if(arrayString.length == 2 && i == 1) {
+        newString += " and " + this.individualAuthorString(arrayString[i]);
+      }
+  	  else if(i+1>=arrayString.length) {
+  	    newString += ", and " + this.individualAuthorString(arrayString[i]);
   	  } else {
-	    newString += ", " + arrayString[i];
+	    newString += ", " + this.individualAuthorString(arrayString[i]);
 	  }
 	}
 	return newString;
+  }
+
+  this.individualAuthorString = function(string) {
+    var arrayString = string.split(new RegExp(",[\\s]+"));
+    return arrayString[1] + " " + arrayString[0];
   }
   
   this.createTemplate = function(entry){
@@ -429,9 +437,11 @@ function BibtexDisplay() {
         tpl.find("." + key.toLowerCase()).html(value);
       } else {
         tpl.find("span:not(a)." + key.toLowerCase()).html(this.fixValue(value));
+        var this2 = this;
         var link = tpl.find("a." + key.toLowerCase()).each(function() {
+          $(this).attr("href", this2.fixValue(value));
 	        if(this.attributes["href"] == "") {
-			      this.attributes["href"].value = this.fixValue(value);
+			      this.attributes["href"].value = this2.fixValue(value);
 			    }
 		    });
       }
@@ -632,11 +642,9 @@ function bibtex_js_draw() {
 
     // Executed on completion of last outstanding ajax call
     $(document).ajaxStop(function() {
-      console.log(bibstrings);
     	var display = new BibtexDisplay();
     	for(var name in bibstrings) {
-        console.log(bibstrings[name]);
-    		if(bibstrings.hasOwnProperty(name)) {
+    		if(bibstrings.hasOwnProperty(name) ){
     			(new BibtexDisplay).displayBibtex(bibstrings[name], $(".bibtex_display." + name));
     		}
     	}
